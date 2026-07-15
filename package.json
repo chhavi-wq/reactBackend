@@ -1,0 +1,12 @@
+{
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "brcypt": "^1.0.1",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "mongoose": "^9.7.4",
+    "nodemailer": "^9.0.3",
+    "path": "^0.12.7"
+  }
+}
