@@ -14,6 +14,9 @@ const Schema = new mongoose.Schema({
     },
     otp : {
         type : String,
+    },
+    token:{
+        type:String
     }
 })
 

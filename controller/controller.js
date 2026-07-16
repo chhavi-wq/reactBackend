@@ -1,5 +1,6 @@
 const Client = require("../model/model");
 //create update delete read
+const jwt=require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const nodemailer = require("nodemailer")
 require("dotenv").config();
@@ -117,7 +118,9 @@ const login = async(req,res)=>{
         if(!comparedPassword){
             return res.status(400).json({message:"password incorrect!"})
         }
-        res.status(200).json({message:"login successfull"});
+
+        const token=jwt.sign({email:user_email.email},process.env.JWT_SECRET_KEY,{expiresIn:"1h"})
+        res.status(200).json({message:"login successfull",token});
     }
     catch(err){
         res.status(500).json({message:"internal server error",error:err.message})
