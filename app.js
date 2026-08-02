@@ -12,11 +12,11 @@ app.use(cors());
 
 app.use("/api",route);
 
-mongoose.connect("mongodb://localhost:27017/main")
+mongoose.connect(process.env.mongoUrl)
 .then(()=>{
-    console.log('connected to mongodb');
+    console.log('connected to mongo atlas');
     app.listen(PORT,()=>{
-        console.log(`app is listening to PORT ${PORT}`)
+        console.log(`server running on port ${PORT}`)
     })
 })
 .catch((err)=>{
