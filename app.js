@@ -11,7 +11,9 @@ const PORT = 3000;
 app.use(cors());
 
 app.use("/api",route);
-
+app.get("/", (req, res) => {
+  res.send("Backend is running!");
+});
 mongoose.connect(process.env.mongoUrl)
 .then(()=>{
     console.log('connected to mongo atlas');
