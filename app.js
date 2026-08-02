@@ -14,7 +14,7 @@ app.use("/api",route);
 app.get("/", (req, res) => {
   res.send("Backend is running!");
 });
-mongoose.connect(process.env.mongoUrl)
+mongoose.connect(process.env.MONGO_URI)
 .then(()=>{
     console.log('connected to mongo atlas');
     app.listen(PORT,()=>{
