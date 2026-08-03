@@ -10,14 +10,20 @@ const Order = require("../model/orderModel");
 
 
 const transporter = nodemailer.createTransport({
-    host:"smtp.gmail.com",
-    port:465,
-    secure:true,
-    auth:{
-        user:process.env.USER_EMAIL,
-        pass:process.env.USER_PASS
+    service: "gmail",
+    auth: {
+        user: process.env.USER_EMAIL,
+        pass: process.env.USER_PASS
     }
-})
+});
+
+transporter.verify((error, success) => {
+    if (error) {
+        console.log("SMTP ERROR:", error);
+    } else {
+        console.log("SMTP SERVER READY");
+    }
+});
 const generateOtp=()=>{
     let digits = "0123456789";
     let OTP = "";
@@ -31,22 +37,23 @@ const Signup = async (req, res) => {
     try {
         const { name, email, password } = req.body;
 
-        if (!email || !name || !password) {
-            return res.status(401).json({
+        console.log("1. Signup request received");
+
+        if (!name || !email || !password) {
+            return res.status(400).json({
                 message: "All fields are required!"
             });
         }
 
-        const Client_email = await Client.findOne({ email });
+        const existingUser = await Client.findOne({ email });
 
-        if (Client_email) {
+        if (existingUser) {
             return res.status(400).json({
                 message: "email already exists"
             });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
-
         const otp = generateOtp();
 
         const newClient = new Client({
@@ -58,16 +65,21 @@ const Signup = async (req, res) => {
 
         await newClient.save();
 
+        console.log("USER SAVED:", email);
+        console.log("OTP:", otp);
+
         const sendmail = {
             from: process.env.USER_EMAIL,
-            to: newClient.email,
+            to: email,
             subject: "OTP VERIFICATION",
             text: `Your OTP is ${otp}`
         };
 
-        console.log("OTP:", otp);
+        console.log("SENDING EMAIL...");
 
         await transporter.sendMail(sendmail);
+
+        console.log("EMAIL SENT SUCCESSFULLY");
 
         return res.status(200).json({
             message: "otp sent successfully"
