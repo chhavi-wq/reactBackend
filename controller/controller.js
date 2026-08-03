@@ -27,42 +27,61 @@ const generateOtp=()=>{
     return OTP;
 }
 
-const Signup = async(req,res)=>{
-    try{
-        const { name, email, password} = req.body;
-        const Client_email= await Client.findOne({email});
-        if(Client_email){
-            return res.status(400).json({message:"email already exists"})
+const Signup = async (req, res) => {
+    try {
+        const { name, email, password } = req.body;
+
+        if (!email || !name || !password) {
+            return res.status(401).json({
+                message: "All fields are required!"
+            });
         }
-        if(!email || !name || !password ){
-            return res.status(401).json({message:"All fields are required!"})
+
+        const Client_email = await Client.findOne({ email });
+
+        if (Client_email) {
+            return res.status(400).json({
+                message: "email already exists"
+            });
         }
-        const hashedPassword = await bcrypt.hash(password,10)
-        const newClient = new Client({
-            name, email, password: hashedPassword
-        })
-        await newClient.save();
+
+        const hashedPassword = await bcrypt.hash(password, 10);
 
         const otp = generateOtp();
-        newClient.otp = otp
+
+        const newClient = new Client({
+            name,
+            email,
+            password: hashedPassword,
+            otp
+        });
+
         await newClient.save();
 
-    const sendmail={
-    from:"test@gmail.com",
-    to:newClient.email,
-    subject:"OTP VERIFICATION",
-    text:`your OTP is ${otp}`
+        const sendmail = {
+            from: process.env.USER_EMAIL,
+            to: newClient.email,
+            subject: "OTP VERIFICATION",
+            text: `Your OTP is ${otp}`
+        };
 
-}
-console.log(otp);
-await transporter.sendMail(sendmail)
-return res.status(200).json({message:"otp sent successfully"});
-    }
-    catch(err){
-        res.status(500).json({message:"internal server error",error:err.message})
-    }
-}
+        console.log("OTP:", otp);
 
+        await transporter.sendMail(sendmail);
+
+        return res.status(200).json({
+            message: "otp sent successfully"
+        });
+
+    } catch (err) {
+        console.error("SIGNUP ERROR:", err);
+
+        return res.status(500).json({
+            message: "internal server error",
+            error: err.message
+        });
+    }
+};
 const verifyOtp=async(req,res)=>{
     try{
         const {email,otp} = req.body;
