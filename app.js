@@ -16,7 +16,7 @@ app.get("/", (req, res) => {
 mongoose.connect(process.env.MONGO_URI)
 .then(()=>{
     console.log('connected to mongo atlas');
-    console.log(process.env.MONGO_URI)
+
     app.listen(PORT,()=>{
         console.log(`server running on port ${PORT}`)
     })
