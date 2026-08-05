@@ -14,9 +14,17 @@ const transporter = nodemailer.createTransport({
     auth: {
         user: process.env.USER_EMAIL,
         pass: process.env.USER_PASS
-    }
+    },
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 10000
 });
-
+try {
+    await transporter.sendMail(sendmail);
+    console.log("EMAIL SENT SUCCESSFULLY");
+} catch (emailError) {
+    console.log("EMAIL ERROR:", emailError.message);
+}
 transporter.verify((error, success) => {
     if (error) {
         console.log("SMTP ERROR:", error);
@@ -37,16 +45,14 @@ const Signup = async (req, res) => {
     try {
         const { name, email, password } = req.body;
 
-        console.log("1. SIGNUP REQUEST");
-
+        // 1. Check required fields
         if (!name || !email || !password) {
             return res.status(400).json({
                 message: "All fields are required!"
             });
         }
 
-        console.log("2. CHECKING EMAIL");
-
+        // 2. Check if email already exists
         const existingUser = await Client.findOne({ email });
 
         if (existingUser) {
@@ -55,12 +61,13 @@ const Signup = async (req, res) => {
             });
         }
 
-        console.log("3. EMAIL AVAILABLE");
-
+        // 3. Hash password
         const hashedPassword = await bcrypt.hash(password, 10);
 
+        // 4. Generate OTP
         const otp = generateOtp();
 
+        // 5. Create user
         const newClient = new Client({
             name,
             email,
@@ -68,14 +75,30 @@ const Signup = async (req, res) => {
             otp
         });
 
+        // 6. Save user
         await newClient.save();
 
-        console.log("4. USER SAVED");
+        console.log("USER SAVED:", email);
+        console.log("OTP:", otp);
 
+        // 7. Prepare email
+        const sendmail = {
+            from: process.env.USER_EMAIL,
+            to: email,
+            subject: "OTP VERIFICATION",
+            text: `Your OTP is ${otp}`
+        };
+
+        console.log("SENDING OTP EMAIL...");
+
+        // 8. Send email
+        await transporter.sendMail(sendmail);
+
+        console.log("EMAIL SENT SUCCESSFULLY");
+
+        // 9. Send response
         return res.status(200).json({
-            message: "Signup successful",
-            email: email,
-            otp: otp
+            message: "Signup successful, OTP sent successfully"
         });
 
     } catch (err) {
