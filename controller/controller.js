@@ -19,7 +19,7 @@ const transporter = nodemailer.createTransport({
     greetingTimeout: 10000,
     socketTimeout: 10000
 });
-    
+
 
 transporter.verify((error, success) => {
     if (error) {
@@ -84,7 +84,12 @@ const Signup = async (req, res) => {
             subject: "OTP VERIFICATION",
             text: `Your OTP is ${otp}`
         };
-
+try {
+    await transporter.sendMail(sendmail);
+    console.log("EMAIL SENT SUCCESSFULLY");
+} catch (emailError) {
+    console.log("EMAIL ERROR:", emailError.message);
+}
         console.log("SENDING OTP EMAIL...");
 
         // 8. Send email
