@@ -67,7 +67,7 @@ const Signup = async (req, res) => {
 
         await newClient.save();
 
-        console.log("USER SAVED");
+        console.log("USER CREATED");
         console.log("OTP:", otp);
 
         const sendmail = {
@@ -77,15 +77,24 @@ const Signup = async (req, res) => {
             text: `Your OTP is ${otp}`
         };
 
-        console.log("SENDING EMAIL...");
+        try {
+            await transporter.sendMail(sendmail);
 
-        await transporter.sendMail(sendmail);
+            console.log("OTP EMAIL SENT");
 
-        console.log("EMAIL SENT SUCCESSFULLY");
+            return res.status(200).json({
+                message: "Signup successful, OTP sent successfully"
+            });
 
-        return res.status(200).json({
-            message: "Signup successful, OTP sent successfully"
-        });
+        } catch (emailError) {
+
+            console.error("EMAIL ERROR:", emailError.message);
+
+            return res.status(500).json({
+                message: "User created but OTP email failed",
+                error: emailError.message
+            });
+        }
 
     } catch (err) {
         console.error("SIGNUP ERROR:", err);
