@@ -1,3 +1,6 @@
+const dns = require("dns");
+dns.setServers(["8.8.8.8", "8.8.4.4"]);
+
 require("dotenv").config()
 const express = require("express");
 const mongoose = require("mongoose");
@@ -13,7 +16,9 @@ app.use("/api",route);
 app.get("/", (req, res) => {
   res.send("Backend is running!");
 });
+console.log("MONGO_URI =", process.env.MONGO_URI);
 mongoose.connect(process.env.MONGO_URI)
+
 .then(()=>{
     console.log('connected to mongo atlas');
 
