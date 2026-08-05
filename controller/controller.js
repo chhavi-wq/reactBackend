@@ -41,14 +41,12 @@ const Signup = async (req, res) => {
     try {
         const { name, email, password } = req.body;
 
-        // 1. Check required fields
         if (!name || !email || !password) {
             return res.status(400).json({
                 message: "All fields are required!"
             });
         }
 
-        // 2. Check if email already exists
         const existingUser = await Client.findOne({ email });
 
         if (existingUser) {
@@ -57,13 +55,9 @@ const Signup = async (req, res) => {
             });
         }
 
-        // 3. Hash password
         const hashedPassword = await bcrypt.hash(password, 10);
-
-        // 4. Generate OTP
         const otp = generateOtp();
 
-        // 5. Create user
         const newClient = new Client({
             name,
             email,
@@ -71,33 +65,24 @@ const Signup = async (req, res) => {
             otp
         });
 
-        // 6. Save user
         await newClient.save();
 
-        console.log("USER SAVED:", email);
+        console.log("USER SAVED");
         console.log("OTP:", otp);
 
-        // 7. Prepare email
         const sendmail = {
             from: process.env.USER_EMAIL,
             to: email,
             subject: "OTP VERIFICATION",
             text: `Your OTP is ${otp}`
         };
-try {
-    await transporter.sendMail(sendmail);
-    console.log("EMAIL SENT SUCCESSFULLY");
-} catch (emailError) {
-    console.log("EMAIL ERROR:", emailError.message);
-}
-        console.log("SENDING OTP EMAIL...");
 
-        // 8. Send email
+        console.log("SENDING EMAIL...");
+
         await transporter.sendMail(sendmail);
 
         console.log("EMAIL SENT SUCCESSFULLY");
 
-        // 9. Send response
         return res.status(200).json({
             message: "Signup successful, OTP sent successfully"
         });
