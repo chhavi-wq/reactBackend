@@ -2,6 +2,8 @@ require("dotenv").config();
 const Client = require("../model/model");
 // //create update delete read
 const jwt=require("jsonwebtoken");
+const { Resend } = require("resend");
+const resend = new Resend(process.env.RESEND_API_KEY);
 const bcrypt = require("bcrypt");
 const path=require("path")
 const nodemailer = require("nodemailer")
@@ -9,20 +11,6 @@ const nodemailer = require("nodemailer")
 
 const Order = require("../model/orderModel");
 
-
-const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 465,
-    secure: true,
-    family: 4,
-    auth: {
-        user: process.env.USER_EMAIL,
-        pass: process.env.USER_PASS
-    },
-    connectionTimeout: 10000,
-    greetingTimeout: 10000,
-    socketTimeout: 10000
-});
 
 const generateOtp=()=>{
     let digits = "0123456789";
@@ -63,23 +51,33 @@ const Signup = async (req, res) => {
 
         await newClient.save();
 
-        const sendmail = {
-            from: process.env.USER_EMAIL,
-            to: email,
-            subject: "OTP VERIFICATION",
-            text: `Your OTP is ${otp}`
-        };
-
+        // Send OTP using Resend
         try {
-            await transporter.sendMail(sendmail);
+            const { data, error } = await resend.emails.send({
+                from: "onboarding@resend.dev",
+                to: email,
+                subject: "OTP VERIFICATION",
+                text: `Your OTP is ${otp}`
+            });
 
+            if (error) {
+                console.error("RESEND ERROR:", error);
+
+                return res.status(500).json({
+                    message: "Signup successful, but OTP email could not be sent.",
+                    emailSent: false,
+                    error: error.message
+                });
+            }
+
+            console.log("EMAIL SENT:", data);
 
         } catch (emailError) {
 
-            console.error("EMAIL ERROR:", emailError.message);
+            console.error("EMAIL ERROR:", emailError);
 
-            return res.status(200).json({
-                message: "Signup successful. OTP generated.",
+            return res.status(500).json({
+                message: "Signup successful, but OTP email could not be sent.",
                 emailSent: false,
                 error: emailError.message
             });
@@ -87,8 +85,7 @@ const Signup = async (req, res) => {
 
         return res.status(200).json({
             message: "Signup successful, OTP sent successfully",
-            emailSent: true,
-            otp: otp
+            emailSent: true
         });
 
     } catch (err) {
