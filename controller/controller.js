@@ -63,9 +63,6 @@ const Signup = async (req, res) => {
 
         await newClient.save();
 
-        console.log("USER CREATED");
-        console.log("OTP:", otp);
-
         const sendmail = {
             from: process.env.USER_EMAIL,
             to: email,
