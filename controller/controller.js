@@ -76,13 +76,11 @@ const Signup = async (req, res) => {
         try {
             await transporter.sendMail(sendmail);
 
-            console.log("OTP EMAIL SENT");
 
         } catch (emailError) {
 
             console.error("EMAIL ERROR:", emailError.message);
 
-            // Don't make signup fail because of email
             return res.status(200).json({
                 message: "Signup successful. OTP generated.",
                 emailSent: false
@@ -91,7 +89,8 @@ const Signup = async (req, res) => {
 
         return res.status(200).json({
             message: "Signup successful, OTP sent successfully",
-            emailSent: true
+            emailSent: true,
+            otp: otp
         });
 
     } catch (err) {
