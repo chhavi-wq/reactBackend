@@ -80,7 +80,8 @@ const Signup = async (req, res) => {
 
             return res.status(200).json({
                 message: "Signup successful. OTP generated.",
-                emailSent: false
+                emailSent: false,
+                error: emailError.message
             });
         }
 
