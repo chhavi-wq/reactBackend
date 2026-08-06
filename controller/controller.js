@@ -11,6 +11,15 @@ const nodemailer = require("nodemailer")
 
 const Order = require("../model/orderModel");
 
+const nodemailer = require("nodemailer");
+
+const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+        user: process.env.USER_EMAIL,
+        pass: process.env.USER_PASS
+    }
+});
 
 const generateOtp=()=>{
     let digits = "0123456789";
@@ -51,33 +60,22 @@ const Signup = async (req, res) => {
 
         await newClient.save();
 
-        // Send OTP using Resend
+        const sendmail = {
+            from: process.env.USER_EMAIL,
+            to: email,
+            subject: "OTP VERIFICATION",
+            text: `Your OTP is ${otp}`
+        };
+
         try {
-            const { data, error } = await resend.emails.send({
-                from: "onboarding@resend.dev",
-                to: email,
-                subject: "OTP VERIFICATION",
-                text: `Your OTP is ${otp}`
-            });
-
-            if (error) {
-                console.error("RESEND ERROR:", error);
-
-                return res.status(500).json({
-                    message: "Signup successful, but OTP email could not be sent.",
-                    emailSent: false,
-                    error: error.message
-                });
-            }
-
-            console.log("EMAIL SENT:", data);
+            await transporter.sendMail(sendmail);
 
         } catch (emailError) {
 
-            console.error("EMAIL ERROR:", emailError);
+            console.error("EMAIL ERROR:", emailError.message);
 
-            return res.status(500).json({
-                message: "Signup successful, but OTP email could not be sent.",
+            return res.status(200).json({
+                message: "Signup successful. OTP generated.",
                 emailSent: false,
                 error: emailError.message
             });
@@ -85,7 +83,8 @@ const Signup = async (req, res) => {
 
         return res.status(200).json({
             message: "Signup successful, OTP sent successfully",
-            emailSent: true
+            emailSent: true,
+            otp: otp
         });
 
     } catch (err) {
