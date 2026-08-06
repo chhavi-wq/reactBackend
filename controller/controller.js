@@ -3,6 +3,7 @@ const Client = require("../model/model");
 // //create update delete read
 const jwt=require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const path=require("path")
 const nodemailer = require("nodemailer")
 
 
@@ -12,36 +13,11 @@ const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
     port: 465,
     secure: true,
-    family: 4,
     auth: {
         user: process.env.USER_EMAIL,
         pass: process.env.USER_PASS
     }
 });
-
-transporter.verify((error, success) => {
-    if (error) {
-        console.log("SMTP ERROR:", error);
-    } else {
-        console.log("SMTP SERVER READY");
-    }
-});
-
-const testMail = {
-    from: process.env.USER_EMAIL,
-    to: process.env.USER_EMAIL,
-    subject: "Test Email",
-    text: "Nodemailer is working!"
-};
-
-transporter.sendMail(testMail)
-    .then(() => {
-        console.log("TEST EMAIL SENT");
-    })
-    .catch((error) => {
-        console.log("TEST EMAIL ERROR:", error);
-    });
-
 const generateOtp=()=>{
     let digits = "0123456789";
     let OTP = "";
@@ -81,40 +57,17 @@ const Signup = async (req, res) => {
 
         await newClient.save();
 
-        console.log("USER CREATED");
-        console.log("OTP:", otp);
-        console.log("SENDING OTP TO:", email);
-
         const sendmail = {
-            from: process.env.USER_EMAIL,
-            to: email,
+            from: "test@gmail.com",
+            to: newClient.email,
             subject: "OTP VERIFICATION",
             text: `Your OTP is ${otp}`
         };
 
-        console.log("MAIL OBJECT:", sendmail);
-
-        try {
-            const info = await transporter.sendMail(sendmail);
-
-            console.log("OTP EMAIL SENT");
-            console.log("MESSAGE ID:", info.messageId);
-
-            return res.status(200).json({
-                message: "Signup successful, OTP sent successfully"
-            });
-
-        } catch (emailError) {
-            console.error("EMAIL ERROR:", emailError);
-
-            return res.status(500).json({
-                message: "User created but OTP email failed",
-                error: emailError.message
-            });
-        }
+    await transporter.sendMail(sendmail)
+    return res.status(200).json({message:"OTP sent Successfully"})
 
     } catch (err) {
-        console.error("SIGNUP ERROR:", err);
 
         return res.status(500).json({
             message: "internal server error",
