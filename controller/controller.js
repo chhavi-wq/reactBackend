@@ -85,6 +85,7 @@ const Signup = async (req, res) => {
 
         console.log("USER CREATED");
         console.log("OTP:", otp);
+        console.log("SENDING OTP TO:", email);
 
         const sendmail = {
             from: process.env.USER_EMAIL,
@@ -93,19 +94,20 @@ const Signup = async (req, res) => {
             text: `Your OTP is ${otp}`
         };
 
+        console.log("MAIL OBJECT:", sendmail);
+
         try {
-            console.log("ABOUT TO SEND OTP");
-            await transporter.sendMail(sendmail);
+            const info = await transporter.sendMail(sendmail);
 
             console.log("OTP EMAIL SENT");
+            console.log("MESSAGE ID:", info.messageId);
 
             return res.status(200).json({
                 message: "Signup successful, OTP sent successfully"
             });
 
         } catch (emailError) {
-
-            console.error("EMAIL ERROR:", emailError.message);
+            console.error("EMAIL ERROR:", emailError);
 
             return res.status(500).json({
                 message: "User created but OTP email failed",
@@ -122,6 +124,7 @@ const Signup = async (req, res) => {
         });
     }
 };
+
 const verifyOtp=async(req,res)=>{
     try{
         const {email,otp} = req.body;
