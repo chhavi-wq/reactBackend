@@ -7,12 +7,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const bcrypt = require("bcrypt");
 const path=require("path")
 const nodemailer = require("nodemailer")
-
-
 const Order = require("../model/orderModel");
-
-const nodemailer = require("nodemailer");
-
 const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
