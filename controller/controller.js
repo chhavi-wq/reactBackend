@@ -1,9 +1,10 @@
+require("dotenv").config();
 const Client = require("../model/model");
 // //create update delete read
 const jwt=require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const nodemailer = require("nodemailer")
-require("dotenv").config();
+
 
 const Order = require("../model/orderModel");
 
@@ -11,15 +12,14 @@ const Order = require("../model/orderModel");
 
 const transporter = nodemailer.createTransport({
     service: "gmail",
+     host: "smtp.gmail.com",
+    port: 465,
+    secure: true,
     auth: {
         user: process.env.USER_EMAIL,
         pass: process.env.USER_PASS
-    },
-    connectionTimeout: 10000,
-    greetingTimeout: 10000,
-    socketTimeout: 10000
+    }
 });
-
 
 transporter.verify((error, success) => {
     if (error) {
@@ -28,6 +28,22 @@ transporter.verify((error, success) => {
         console.log("SMTP SERVER READY");
     }
 });
+
+const testMail = {
+    from: process.env.USER_EMAIL,
+    to: process.env.USER_EMAIL,
+    subject: "Test Email",
+    text: "Nodemailer is working!"
+};
+
+transporter.sendMail(testMail)
+    .then(() => {
+        console.log("TEST EMAIL SENT");
+    })
+    .catch((error) => {
+        console.log("TEST EMAIL ERROR:", error);
+    });
+
 const generateOtp=()=>{
     let digits = "0123456789";
     let OTP = "";
@@ -78,6 +94,7 @@ const Signup = async (req, res) => {
         };
 
         try {
+            console.log("ABOUT TO SEND OTP");
             await transporter.sendMail(sendmail);
 
             console.log("OTP EMAIL SENT");
