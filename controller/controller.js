@@ -18,6 +18,7 @@ const transporter = nodemailer.createTransport({
         pass: process.env.USER_PASS
     }
 });
+await transporter.sendMail(sendmail);
 const generateOtp=()=>{
     let digits = "0123456789";
     let OTP = "";
