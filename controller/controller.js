@@ -9,14 +9,19 @@ const nodemailer = require("nodemailer")
 
 const Order = require("../model/orderModel");
 
+
 const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
     port: 465,
     secure: true,
+    family: 4,
     auth: {
         user: process.env.USER_EMAIL,
         pass: process.env.USER_PASS
-    }
+    },
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 10000
 });
 
 const generateOtp=()=>{
@@ -58,17 +63,40 @@ const Signup = async (req, res) => {
 
         await newClient.save();
 
+        console.log("USER CREATED");
+        console.log("OTP:", otp);
+
         const sendmail = {
-            from: "test@gmail.com",
-            to: newClient.email,
+            from: process.env.USER_EMAIL,
+            to: email,
             subject: "OTP VERIFICATION",
             text: `Your OTP is ${otp}`
         };
 
-    await transporter.sendMail(sendmail)
-    return res.status(200).json({message:"OTP sent Successfully"})
+        try {
+            await transporter.sendMail(sendmail);
+
+            console.log("OTP EMAIL SENT");
+
+        } catch (emailError) {
+
+            console.error("EMAIL ERROR:", emailError.message);
+
+            // Don't make signup fail because of email
+            return res.status(200).json({
+                message: "Signup successful. OTP generated.",
+                emailSent: false
+            });
+        }
+
+        return res.status(200).json({
+            message: "Signup successful, OTP sent successfully",
+            emailSent: true
+        });
 
     } catch (err) {
+
+        console.error("SIGNUP ERROR:", err);
 
         return res.status(500).json({
             message: "internal server error",
