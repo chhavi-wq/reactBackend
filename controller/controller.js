@@ -5,16 +5,11 @@ const jwt=require("jsonwebtoken");
 const { Resend } = require("resend");
 const resend = new Resend(process.env.RESEND_API_KEY);
 const bcrypt = require("bcrypt");
+const sendOtpEmail = require("../utils/email");
 const path=require("path")
 const nodemailer = require("nodemailer")
 const Order = require("../model/orderModel");
-const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-        user: process.env.USER_EMAIL,
-        pass: process.env.USER_PASS
-    }
-});
+
 
 const generateOtp=()=>{
     let digits = "0123456789";
@@ -55,39 +50,28 @@ const Signup = async (req, res) => {
 
         await newClient.save();
 
-        const sendmail = {
-            from: process.env.USER_EMAIL,
-            to: email,
-            subject: "OTP VERIFICATION",
-            text: `Your OTP is ${otp}`
-        };
-
         try {
-            await transporter.sendMail(sendmail);
+            await sendOtpEmail(email, otp);
 
         } catch (emailError) {
-
             console.error("EMAIL ERROR:", emailError.message);
 
             return res.status(200).json({
-                message: "Signup successful. OTP generated.",
-                emailSent: false,
-                error: emailError.message
+                message: "Signup successful. OTP generated, but email could not be sent.",
+                emailSent: false
             });
         }
 
         return res.status(200).json({
             message: "Signup successful, OTP sent successfully",
-            emailSent: true,
-            otp: otp
+            emailSent: true
         });
 
     } catch (err) {
-
         console.error("SIGNUP ERROR:", err);
 
         return res.status(500).json({
-            message: "internal server error",
+            message: "Internal server error",
             error: err.message
         });
     }
