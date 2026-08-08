@@ -22,7 +22,12 @@ const Schema = new mongoose.Schema({
         type : String,
         enum : ["user","admin"],
         default : "user"
-}
+},  
+isVerified: {
+    type: Boolean,
+    default: false
+},
+
 })
 
 const client = mongoose.model("Client",Schema);
