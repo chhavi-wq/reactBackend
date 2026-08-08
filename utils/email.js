@@ -5,7 +5,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const sendOtpEmail = async (email, otp) => {
   try {
     const { data, error } = await resend.emails.send({
-      from: "SAGE <noreply@yourdomain.com>",
+      from:"SAGE <onboarding@resend.dev>",
       to: [email],
       subject: "Your SAGE Verification OTP",
       html: `
