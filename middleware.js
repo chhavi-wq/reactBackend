@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const Client = require("../model/model");
+const Client = require("./model/model");
 
 const middleware = async (req, res, next) => {
     try {
