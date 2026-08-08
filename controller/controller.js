@@ -88,6 +88,7 @@ const verifyOtp=async(req,res)=>{
         if(user_email.otp !== otp){
             return res.status(401).json({message:"otp doesn't match"})
         };
+        user_email.isVerified=true
         user_email.otp=null;
         await user_email.save();
         res.status(200).json({message:"verification done sucessfully!"})
