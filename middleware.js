@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-
+const Client = require("../model/model");
 const middleware = (req, res, next) => {
   try {
    const authHeader = req.headers.authorization;
@@ -13,6 +13,10 @@ const token = authHeader.split(" ")[1];
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
+    const user = await Client.findById(decoded.id)
+    if(!user){
+      return res.status(401).json({message:"User no longer exists. Please login again."})
+    }
     req.user = decoded; 
 
     next();
